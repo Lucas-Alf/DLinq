@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MPI;
 
 public static class DLinq
@@ -79,5 +80,34 @@ public static class DLinq
         var firstBatchSize = Convert.ToInt32(Math.Floor(batchSize));
         var lastBatchSize = Convert.ToInt32(Math.Ceiling(firstBatchSize + ((decimal)totalRecords % processes)));
         return Tuple.Create(firstBatchSize, lastBatchSize);
+    }
+
+    public static IEnumerable<TResult> DRun<T, TResult>(this IEnumerable<T> input, Intracommunicator comm, Func<IEnumerable<T>, TResult> func)
+    {
+        var totalRecords = input.Count();
+        var batchSize = GetBathSize(comm.Size, totalRecords);
+        var result = new TResult[] { };
+        for (int rank = 0; rank < comm.Size; rank++)
+        {
+            if (rank == comm.Rank)
+            {
+                var skip = rank * batchSize.Item1;
+                var take = rank != comm.Size - 1
+                    ? batchSize.Item1
+                    : batchSize.Item2;
+
+                Console.WriteLine($"(DRun) Rank {comm.Rank} take {take} records");
+                var temp = func(input.Skip(skip).Take(take));
+
+                comm.Barrier();
+                var gather = comm.Gather(temp, 0);
+                if (comm.Rank == 0)
+                    result = gather;
+
+                // comm.Broadcast(ref result, 0);
+            }
+        }
+
+        return result;
     }
 }
