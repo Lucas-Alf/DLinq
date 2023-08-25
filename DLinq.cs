@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using MPI;
 
 public static class DLinq
@@ -6,7 +5,7 @@ public static class DLinq
     public static IEnumerable<TResult> DSelect<T, TResult>(this IEnumerable<T> input, Intracommunicator comm, Func<T, TResult> selector)
     {
         var totalRecords = input.Count();
-        var batchSize = GetBathSize(comm.Size, totalRecords);
+        var batchSize = GetBatchSize(comm.Size, totalRecords);
         var temp = new TResult[] { };
         var result = new List<TResult>();
         for (int rank = 0; rank < comm.Size; rank++)
@@ -41,7 +40,7 @@ public static class DLinq
     {
         int result = 0;
         var totalRecords = input.Count();
-        var batchSize = GetBathSize(comm.Size, totalRecords);
+        var batchSize = GetBatchSize(comm.Size, totalRecords);
         var temp = 0;
         for (int rank = 0; rank < comm.Size; rank++)
         {
@@ -74,7 +73,7 @@ public static class DLinq
         return result;
     }
 
-    private static Tuple<int, int> GetBathSize(int processes, int totalRecords)
+    private static Tuple<int, int> GetBatchSize(int processes, int totalRecords)
     {
         var batchSize = (decimal)totalRecords / processes;
         var firstBatchSize = Convert.ToInt32(Math.Floor(batchSize));
@@ -85,7 +84,7 @@ public static class DLinq
     public static IEnumerable<TResult> DRun<T, TResult>(this IEnumerable<T> input, Intracommunicator comm, Func<IEnumerable<T>, TResult> func)
     {
         var totalRecords = input.Count();
-        var batchSize = GetBathSize(comm.Size, totalRecords);
+        var batchSize = GetBatchSize(comm.Size, totalRecords);
         var result = new TResult[] { };
         for (int rank = 0; rank < comm.Size; rank++)
         {
