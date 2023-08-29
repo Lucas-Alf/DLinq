@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/stream-app.sln",
+                "${workspaceFolder}/DLinq.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -16,7 +16,7 @@
         {
             "type": "process",
             "label": "run-mpi",
-            "command": "mpiexec -n 4 dotnet ${workspaceFolder}/bin/Debug/net7.0/stream-app.dll",
+            "command": "mpiexec -n 4 dotnet ${workspaceFolder}/bin/Debug/net7.0/DLinq.dll",
             "args": [],
             "problemMatcher": "$msCompile"
         },
@@ -26,7 +26,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/stream-app.sln",
+                "${workspaceFolder}/DLinq.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -40,7 +40,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/stream-app.sln"
+                "${workspaceFolder}/DLinq.sln"
             ],
             "problemMatcher": "$msCompile"
         }

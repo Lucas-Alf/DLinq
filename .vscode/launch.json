@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net7.0/stream-app.dll",
+            "program": "${workspaceFolder}/bin/Debug/net7.0/DLinq.dll",
             "args": ["-n", "4"],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
