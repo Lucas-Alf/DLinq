@@ -11,9 +11,15 @@ namespace DLinq.Extensions
             {
                 while (true)
                 {
-                    var msg = comm.Receive<List<T>>(0, 0);
+                    var msg = comm.Receive<object>(0, 0);
+                    if (msg is string && msg.ToString() == DLinqStream<T>.EOS)
+                    {
+                        comm.Send(DLinqStream<T>.EOS, 0, 0);
+                        break;
+                    }
 
-                    var result = func(msg);
+                    var data = (List<T>)msg;
+                    var result = func(data);
                     comm.Send(result, 0, 0);
                 }
             }

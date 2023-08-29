@@ -6,13 +6,13 @@ namespace DLinq.Sources
 {
     public static class FileSource
     {
-        public static DLinqStream<string> ReadFile(Intracommunicator comm, string path, Encoding encoding, int fileBufferSize = 1024, int batchSize = 1)
+        public static DLinqStream<string> ReadFile(Intracommunicator comm, string path, Encoding encoding, int batchSize = 1)
         {
             if (comm.Rank == 0)
             {
                 using (var fileStream = File.OpenRead(path))
                 {
-                    using (var reader = new StreamReader(fileStream, encoding, true, fileBufferSize))
+                    using (var reader = new StreamReader(fileStream, encoding))
                     {
                         string? line;
                         var currentRank = 1;
@@ -22,7 +22,7 @@ namespace DLinq.Sources
                             batch.Add(line);
                             if (batch.Count() == batchSize)
                             {
-                                Console.WriteLine($"Rank {comm.Rank} send {batch.Count()} items to rank {currentRank}");
+                                // Console.WriteLine($"Rank {comm.Rank} send {batch.Count()} items to rank {currentRank}");
                                 comm.Send(batch, currentRank, 0);
                                 batch.Clear();
 
@@ -31,6 +31,18 @@ namespace DLinq.Sources
                                     currentRank = 1;
                             }
                         }
+
+                        // Send last batch
+                        if (batch.Count() != 0)
+                        {
+                            // Console.WriteLine($"Rank {comm.Rank} send {batch.Count()} items to rank {currentRank}");
+                            comm.Send(batch, currentRank, 0);
+                            batch.Clear();
+                        }
+
+                        // Send End of Signal message
+                        for (int rank = 1; rank < comm.Size; rank++)
+                            comm.Send(DLinqStream<string>.EOS, rank, 0);
                     }
                 }
             }
