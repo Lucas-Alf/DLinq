@@ -6,48 +6,51 @@ namespace DLinq.Sources
 {
     public static class FileSource
     {
-        public static DLinqStream<string> ReadFile(Intracommunicator comm, string path, Encoding encoding, int batchSize = 1)
+        public static DLinqStream<string> ReadFile(Intracommunicator comm, string path, Encoding encoding, int batchSize = 5000)
         {
-            if (comm.Rank == 0)
+            var stream = new DLinqStream<string>(comm);
+            if (comm.Rank == stream.Source)
             {
                 using (var fileStream = File.OpenRead(path))
                 {
                     using (var reader = new StreamReader(fileStream, encoding))
                     {
                         string? line;
-                        var currentRank = 1;
+                        var firstOperator = stream.Operators.Min();
+                        var lastOperator = stream.Operators.Max();
+                        var currentRank = firstOperator;
                         var batch = new List<string>();
                         while ((line = reader.ReadLine()) != null)
                         {
                             batch.Add(line);
                             if (batch.Count() == batchSize)
                             {
-                                // Console.WriteLine($"Rank {comm.Rank} send {batch.Count()} items to rank {currentRank}");
-                                comm.Send(batch, currentRank, 0);
+                                comm.Send(new DLinqRecord<List<string>>(batch), currentRank, 0);
                                 batch.Clear();
 
-                                currentRank++;
-                                if (currentRank == comm.Size)
-                                    currentRank = 1;
+                                if (currentRank == lastOperator)
+                                    currentRank = firstOperator;
+                                else
+                                    currentRank++;
                             }
                         }
 
                         // Send last batch
                         if (batch.Count() != 0)
                         {
-                            // Console.WriteLine($"Rank {comm.Rank} send {batch.Count()} items to rank {currentRank}");
-                            comm.Send(batch, currentRank, 0);
+                            comm.Send(new DLinqRecord<List<string>>(batch), currentRank, 0);
                             batch.Clear();
                         }
 
                         // Send End of Signal message
-                        for (int rank = 1; rank < comm.Size; rank++)
-                            comm.Send(DLinqStream<string>.EOS, rank, 0);
+                        var eosRecord = new DLinqRecord<List<string>>(null, true);
+                        foreach (var rank in stream.Operators)
+                            comm.Send(eosRecord, rank, 0);
                     }
                 }
             }
 
-            return new DLinqStream<string>(comm);
+            return stream;
         }
     }
 }

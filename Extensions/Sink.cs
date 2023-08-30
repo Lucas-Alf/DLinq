@@ -7,23 +7,22 @@ namespace DLinq.Extensions
         public static void Sink<T>(this DLinqStream<T> input, Action<List<T>> func)
         {
             var comm = input.Communicator;
-            if (comm.Rank == 0)
+            if (comm.Rank == input.Sink)
             {
                 var stop = false;
                 var data = new List<T>();
                 while (!stop)
                 {
-                    for (int i = 1; i < comm.Size; i++)
+                    foreach (var rank in input.Operators)
                     {
-                        var msg = comm.Receive<object>(i, 0);
-                        if (msg is string && msg.ToString() == DLinqStream<T>.EOS)
+                        var record = comm.Receive<DLinqRecord<T>>(rank, 0);
+                        if (record.EOS)
                         {
                             stop = true;
                             break;
                         }
 
-                        data.Add((T)msg);
-                        Console.WriteLine($"Sink size: {data.Count()}");
+                        data.Add(record.Data);
                     }
                 }
 

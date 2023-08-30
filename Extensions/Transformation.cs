@@ -7,20 +7,19 @@ namespace DLinq.Extensions
         public static DLinqStream<TResult> Transformation<T, TResult>(this DLinqStream<T> input, Func<List<T>, TResult> func)
         {
             var comm = input.Communicator;
-            if (comm.Rank != 0)
+            if (comm.Rank != input.Source && comm.Rank != input.Sink)
             {
                 while (true)
                 {
-                    var msg = comm.Receive<object>(0, 0);
-                    if (msg is string && msg.ToString() == DLinqStream<T>.EOS)
+                    var record = comm.Receive<DLinqRecord<List<T>>>(input.Source, 0);
+                    if (record.EOS)
                     {
-                        comm.Send(DLinqStream<T>.EOS, 0, 0);
+                        // Send EOS to sink
+                        comm.Send(new DLinqRecord<TResult>(default!, true), input.Sink, 0);
                         break;
                     }
 
-                    var data = (List<T>)msg;
-                    var result = func(data);
-                    comm.Send(result, 0, 0);
+                    comm.Send(new DLinqRecord<TResult>(func(record.Data)), input.Sink, 0);
                 }
             }
 
