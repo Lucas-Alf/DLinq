@@ -6,8 +6,7 @@ internal class Program
     {
         MPI.Environment.Run(comm =>
         {
-            // PrimeNumbers.Run(comm);
-            StreamWordCount.Run(comm);
+            WordCount.Run(comm);
         });
     }
 }
