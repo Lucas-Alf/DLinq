@@ -38,13 +38,13 @@ namespace DLinq.Exemples
                             results.Add(item.Item1, item.Item2);
                     }
 
-                    var top5 = results
+                    var processingTime = DateTime.Now - input.SourceCreatedAt;
+                    var topResults = results
                         .OrderByDescending(x => x.Value)
                         .Take(10)
                         .Select(x => $"{x.Key}: {x.Value}");
 
-                    var processingTime = DateTime.Now - input.SourceCreatedAt;
-                    Console.WriteLine($"({processingTime.Milliseconds}ms to process) -> {String.Join(", ", top5)}");
+                    Console.WriteLine($"({processingTime.Milliseconds}ms to process) -> {String.Join(", ", topResults)}");
                 });
         }
     }
