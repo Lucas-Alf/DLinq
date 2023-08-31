@@ -10,11 +10,11 @@ namespace DLinq.Exemples
         {
             var results = new Dictionary<string, int>();
             var stopWords = File.ReadAllLines("Exemples/StreamWordCount/stop-words.txt");
-            var stream = FileSource.ReadFile(comm, "Exemples/StreamWordCount/bible.txt", Encoding.UTF8, batchSize: 1000);
+            var stream = FileSource.ReadFile(comm, "Exemples/StreamWordCount/bible.txt", Encoding.UTF8, batchSize: 500);
             stream.Transformation((input) =>
-                {
-                    var result = input.Data
-                        .SelectMany(x => x
+                    input.Data
+                        .Where(line => !string.IsNullOrEmpty(line))
+                        .SelectMany(line => line
                             .Replace(".", "")
                             .Replace(",", "")
                             .Replace(":", "")
@@ -23,13 +23,11 @@ namespace DLinq.Exemples
                             .ToLower()
                             .Split(" ")
                         )
-                        .Where(x => !stopWords.Contains(x))
-                        .GroupBy(x => x)
-                        .Select(x => Tuple.Create(x.Key, x.Count()))
-                        .ToList();
-
-                    return result;
-                })
+                        .Where(word => !stopWords.Contains(word))
+                        .GroupBy(word => word)
+                        .Select(word => Tuple.Create(word.Key, word.Count()))
+                        .ToList()
+                )
                 .Sink((input) =>
                 {
                     foreach (var item in input.Data)
