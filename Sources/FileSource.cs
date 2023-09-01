@@ -23,7 +23,7 @@ namespace DLinq.Sources
                             using (var reader = new StreamReader(fileStream, encoding))
                             {
                                 string? line;
-                                var batchId = 1l;
+                                var batchId = 1L;
                                 var firstOperator = stream.Operators.Min();
                                 var lastOperator = stream.Operators.Max();
                                 var currentRank = firstOperator;
