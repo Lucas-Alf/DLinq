@@ -6,7 +6,8 @@ internal class Program
     {
         MPI.Environment.Run(comm =>
         {
-            WordCount.Run(comm);
+            // WordCount.Run(comm);
+            ObjectDetection.Run(comm);
         });
     }
 }
