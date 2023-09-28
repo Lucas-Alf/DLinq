@@ -6,3 +6,8 @@
 
 ###  Dependencies
 Extract `MPI_Deps.zip` in `bin/Debug/net7.0`
+
+### Create ready-to-run self-contained build to run on LAD
+```
+dotnet publish -c Release -r linux-x64 -p:PublishReadyToRun=true
+```

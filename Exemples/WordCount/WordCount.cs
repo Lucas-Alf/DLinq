@@ -7,10 +7,9 @@ namespace DLinq.Exemples
 {
     public class WordCount
     {
-        public static void Run(MPI.Intracommunicator comm)
+        public static void Run(MPI.Intracommunicator comm, string path, int batchSize)
         {
-            var stopWords = File.ReadAllLines("Exemples/WordCount/stop-words.txt");
-            var stream = FileSource.ReadFile(comm, "Exemples/WordCount/bible.txt", Encoding.UTF8, batchSize: 1);
+            var stream = FileSource.ReadFile(comm, path, Encoding.UTF8, batchSize);
             stream.Transformation((input) =>
                 {
                     return input.Data
@@ -24,7 +23,6 @@ namespace DLinq.Exemples
                                 .ToLower()
                                 .Split(" ")
                             )
-                            .Where(word => !stopWords.Contains(word))
                             .GroupBy(word => word)
                             .Select(word => Tuple.Create(word.Key, word.Count()))
                             .ToList();
