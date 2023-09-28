@@ -11,3 +11,8 @@ Extract `MPI_Deps.zip` in `bin/Debug/net7.0`
 ```
 dotnet publish -c Release -r linux-x64 -p:PublishReadyToRun=true
 ```
+
+### Run on LAD
+```
+ladrun -n <number-of-processes> ./DLinq <file> <batch-size>
+```
