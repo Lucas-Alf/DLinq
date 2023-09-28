@@ -9,8 +9,8 @@ namespace DLinq.Exemples
     {
         public static void Run(MPI.Intracommunicator comm)
         {
-            var stopWords = File.ReadAllLines("Exemples/StreamWordCount/stop-words.txt");
-            var stream = FileSource.ReadFile(comm, "Exemples/StreamWordCount/test2.txt", Encoding.UTF8, batchSize: 1);
+            var stopWords = File.ReadAllLines("Exemples/WordCount/stop-words.txt");
+            var stream = FileSource.ReadFile(comm, "Exemples/WordCount/bible.txt", Encoding.UTF8, batchSize: 1);
             stream.Transformation((input) =>
                 {
                     return input.Data
