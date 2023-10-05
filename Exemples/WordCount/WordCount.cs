@@ -32,16 +32,16 @@ namespace DLinq.Exemples
                     var store = new DStreamKeyStore<string, int>();
                     if (!input.EOS)
                     {
-                        foreach (var item in input.Data!)
+                        foreach (var data in input.Data!)
                         {
-                            if (store.ContainsKey(item.Item1))
+                            if (store.ContainsKey(data.Item1))
                             {
-                                var currentValue = store.Get(item.Item1);
-                                store.Update(item.Item1, currentValue + item.Item2);
+                                var currentValue = store.Get(data.Item1);
+                                store.Update(data.Item1, currentValue + data.Item2);
                             }
                             else
                             {
-                                store.Add(item.Item1, item.Item2);
+                                store.Add(data.Item1, data.Item2);
                             }
                         }
                     }
