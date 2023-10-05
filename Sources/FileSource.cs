@@ -23,6 +23,7 @@ namespace DLinq.Sources
                             using (var reader = new StreamReader(fileStream, encoding))
                             {
                                 string? line;
+                                var sendEOS = true;
                                 var batchId = 1L;
                                 var firstOperator = stream.Operators.Min();
                                 var lastOperator = stream.Operators.Max();
@@ -36,9 +37,10 @@ namespace DLinq.Sources
                                         batch.Add(line);
                                         if (batch.Count == batchSize)
                                         {
-                                            comm.Send(new DLinqBatch<List<string>>(batchId, batch, DateTime.Now), currentRank, 0);
+                                            comm.Send(new DLinqBatch<List<string>>(batchId, batch), currentRank, 0);
                                             batch.Clear();
                                             batchId++;
+                                            sendEOS = true;
 
                                             if (currentRank == lastOperator)
                                                 currentRank = firstOperator;
@@ -48,12 +50,26 @@ namespace DLinq.Sources
                                     }
                                     else
                                     {
+                                        // Send last batch
                                         if (batch.Count != 0)
                                         {
-                                            comm.Send(new DLinqBatch<List<string>>(batchId, batch, DateTime.Now), currentRank, 0);
+                                            comm.Send(new DLinqBatch<List<string>>(batchId, batch), currentRank, 0);
                                             batch.Clear();
                                             batchId++;
+                                            sendEOS = true;
 
+                                            if (currentRank == lastOperator)
+                                                currentRank = firstOperator;
+                                            else
+                                                currentRank++;
+                                        }
+
+                                        // Send EOS
+                                        if (sendEOS)
+                                        {
+                                            sendEOS = false;
+                                            comm.Send(new DLinqBatch<List<string>>(batchId, null, true), currentRank, 0);
+                                            batchId++;
                                             if (currentRank == lastOperator)
                                                 currentRank = firstOperator;
                                             else

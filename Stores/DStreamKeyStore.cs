@@ -1,6 +1,6 @@
 namespace DLinq.Stores
 {
-    public class DStreamKeyStore<TKey, TValue> where TKey: notnull
+    public class DStreamKeyStore<TKey, TValue> where TKey : notnull
     {
         private static Dictionary<TKey, TValue> Values { get; set; } = new Dictionary<TKey, TValue>();
 
@@ -27,6 +27,16 @@ namespace DLinq.Stores
         public IReadOnlyDictionary<TKey, TValue> GetAll()
         {
             return Values.AsReadOnly();
+        }
+
+        public void Clear()
+        {
+            Values.Clear();
+        }
+
+        public bool Remove(TKey key)
+        {
+            return Values.Remove(key);
         }
     }
 }

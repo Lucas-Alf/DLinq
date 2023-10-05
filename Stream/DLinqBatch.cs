@@ -11,7 +11,7 @@ namespace DLinq.Stream
         /// <summary>
         /// Data
         /// </summary>
-        public T Data { get; private set; }
+        public T? Data { get; private set; }
 
         /// <summary>
         /// Creation time
@@ -19,16 +19,15 @@ namespace DLinq.Stream
         public DateTime CreatedAt { get; private set; }
 
         /// <summary>
-        /// Creation time from source
+        /// End of Stream
         /// </summary>
-        public DateTime SourceCreatedAt { get; private set; }
+        public bool EOS { get; private set; }
 
-        public DLinqBatch(long id, T data, DateTime sourceCreatedAt)
+        public DLinqBatch(long id, T? data, bool eos = false)
         {
             Id = id;
             Data = data;
-            CreatedAt = DateTime.Now;
-            SourceCreatedAt = sourceCreatedAt;
+            EOS = eos;
         }
     }
 }

@@ -10,10 +10,10 @@ namespace DLinq.Exemples
         public static void Run(MPI.Intracommunicator comm)
         {
             var stopWords = File.ReadAllLines("Exemples/WordCount/stop-words.txt");
-            var stream = FileSource.ReadFile(comm, "Exemples/WordCount/bible.txt", Encoding.UTF8, batchSize: 1);
+            var stream = FileSource.ReadFile(comm, "Exemples/WordCount/bible.txt", Encoding.UTF8, batchSize: 1500);
             stream.Transformation((input) =>
                 {
-                    return input.Data
+                    return input.Data!
                             .Where(line => !string.IsNullOrEmpty(line))
                             .SelectMany(line => line
                                 .Replace(".", "")
@@ -32,26 +32,30 @@ namespace DLinq.Exemples
                 .Sink((input) =>
                 {
                     var store = new DStreamKeyStore<string, int>();
-                    foreach (var item in input.Data)
+                    if (!input.EOS)
                     {
-                        if (store.ContainsKey(item.Item1))
+                        foreach (var item in input.Data!)
                         {
-                            var currentValue = store.Get(item.Item1);
-                            store.Update(item.Item1, currentValue + item.Item2);
-                        }
-                        else
-                        {
-                            store.Add(item.Item1, item.Item2);
+                            if (store.ContainsKey(item.Item1))
+                            {
+                                var currentValue = store.Get(item.Item1);
+                                store.Update(item.Item1, currentValue + item.Item2);
+                            }
+                            else
+                            {
+                                store.Add(item.Item1, item.Item2);
+                            }
                         }
                     }
+                    else
+                    {
+                        var topResults = store.GetAll()
+                            .OrderByDescending(x => x.Value)
+                            .Take(10)
+                            .Select(x => $"{x.Key}: {x.Value}");
 
-                    var processingTime = DateTime.Now - input.SourceCreatedAt;
-                    var topResults = store.GetAll()
-                        .OrderByDescending(x => x.Value)
-                        .Take(10)
-                        .Select(x => $"{x.Key}: {x.Value}");
-
-                    Console.WriteLine($"({processingTime.Milliseconds}ms to process) -> {String.Join(", ", topResults)}");
+                        Console.WriteLine(String.Join(", ", topResults));
+                    }
                 });
         }
     }
