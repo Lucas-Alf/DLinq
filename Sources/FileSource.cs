@@ -37,7 +37,15 @@ namespace DLinq.Sources
                                         batch.Add(line);
                                         if (batch.Count == batchSize)
                                         {
-                                            comm.Send(new DLinqBatch<List<string>>(batchId, batch), currentRank, 0);
+                                            comm.Send(
+                                                value: new DLinqBatch<List<string>>(
+                                                    id: batchId,
+                                                    data: batch,
+                                                    createdAt: MPI.Environment.Time
+                                                ),
+                                                dest: currentRank,
+                                                tag: 0
+                                            );
                                             batch.Clear();
                                             batchId++;
                                             sendEOS = true;
@@ -53,7 +61,15 @@ namespace DLinq.Sources
                                         // Send last batch
                                         if (batch.Count != 0)
                                         {
-                                            comm.Send(new DLinqBatch<List<string>>(batchId, batch), currentRank, 0);
+                                            comm.Send(
+                                                value: new DLinqBatch<List<string>>(
+                                                    id: batchId,
+                                                    data: batch,
+                                                    createdAt: MPI.Environment.Time
+                                                ),
+                                                dest: currentRank,
+                                                tag: 0
+                                            );
                                             batch.Clear();
                                             batchId++;
                                             sendEOS = true;
@@ -68,7 +84,16 @@ namespace DLinq.Sources
                                         if (sendEOS)
                                         {
                                             sendEOS = false;
-                                            comm.Send(new DLinqBatch<List<string>>(batchId, null, true), currentRank, 0);
+                                            comm.Send(
+                                                value: new DLinqBatch<List<string>>(
+                                                    id: batchId,
+                                                    data: null,
+                                                    createdAt: MPI.Environment.Time,
+                                                    eos: true
+                                                ),
+                                                dest: currentRank,
+                                                tag: 0
+                                            );
                                             batchId++;
                                             if (currentRank == lastOperator)
                                                 currentRank = firstOperator;

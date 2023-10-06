@@ -13,9 +13,26 @@ namespace DLinq.Extensions
                 {
                     var batch = comm.Receive<DLinqBatch<List<T>>>(input.Source, 0);
                     if (!batch.EOS)
-                        comm.Send(new DLinqBatch<TResult?>(batch.Id, func(batch)), input.Sink, 0);
+                        comm.Send(
+                            value: new DLinqBatch<TResult?>(
+                                id: batch.Id,
+                                data: func(batch),
+                                createdAt: batch.CreatedAt
+                            ),
+                            dest: input.Sink,
+                            tag: 0
+                        );
                     else
-                        comm.Send(new DLinqBatch<TResult?>(batch.Id, default, true), input.Sink, 0);
+                        comm.Send(
+                            value: new DLinqBatch<TResult?>(
+                                id: batch.Id,
+                                data: default,
+                                createdAt: batch.CreatedAt,
+                                eos: true
+                            ),
+                            dest: input.Sink,
+                            tag: 0
+                        );
                 }
             }
 

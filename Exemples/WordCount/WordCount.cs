@@ -29,6 +29,8 @@ namespace DLinq.Exemples
                 })
                 .Sink((input) =>
                 {
+                    // var latency = MPI.Environment.Time - input.CreatedAt;
+                    // Console.WriteLine($"Batch {input.Id} latency: {latency}s");
                     var store = new DStreamKeyStore<string, int>();
                     if (!input.EOS)
                     {
