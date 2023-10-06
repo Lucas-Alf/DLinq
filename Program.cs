@@ -8,7 +8,7 @@ internal class Program
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("dlinq <path> <batch-size>");
+                Console.WriteLine("DLinq <path> <batch-size>");
                 Environment.Exit(0);
             }
 
