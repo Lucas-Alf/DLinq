@@ -1,16 +1,21 @@
-using System.Text;
 using DLinq.Extensions;
 using DLinq.Sources;
 using DLinq.Stores;
+using System.Text;
 
 namespace DLinq.Exemples
 {
-    public class WordCount
+    public class DistributedWordCount
     {
-        public static void Run(MPI.Intracommunicator comm, string path, int batchSize)
+        public static void Run(string path, int batchSize)
         {
-            var stream = FileSource.ReadFile(comm, path, Encoding.UTF8, batchSize);
-            stream.Transformation((input) =>
+            MPI.Environment.Run(comm =>
+            {
+                if (comm.Rank == 0)
+                    Console.WriteLine($"Mode: distributed with batch size {batchSize}");
+
+                var stream = FileSource.ReadFile(comm, path, Encoding.UTF8, batchSize);
+                stream.Transformation((input) =>
                 {
                     return input.Data!
                             .Where(line => !string.IsNullOrEmpty(line))
@@ -55,9 +60,10 @@ namespace DLinq.Exemples
                             .Select(x => $"{x.Key}: {x.Value}");
 
                         Console.WriteLine(String.Join(", ", topResults));
-                        Console.WriteLine($"Elapsed time: {input.CreatedAt/1000}ms");
+                        Console.WriteLine($"Elapsed time: {input.CreatedAt / 1000}ms");
                     }
                 });
+            });
         }
     }
 }
