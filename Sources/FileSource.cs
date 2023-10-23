@@ -1,6 +1,6 @@
-using System.Text;
 using DLinq.Stream;
 using MPI;
+using System.Text;
 
 namespace DLinq.Sources
 {

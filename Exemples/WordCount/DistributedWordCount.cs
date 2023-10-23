@@ -14,6 +14,9 @@ namespace DLinq.Exemples
                 if (comm.Rank == 0)
                     Console.WriteLine($"Mode: distributed with batch size {batchSize}");
 
+                if (comm.Rank == (comm.Size - 1))
+                    Console.WriteLine($"Sink started at time: {MPI.Environment.Time * 1000}ms");
+
                 var stream = FileSource.ReadFile(comm, path, Encoding.UTF8, batchSize);
                 stream.Transformation((input) =>
                 {
@@ -34,8 +37,6 @@ namespace DLinq.Exemples
                 })
                 .Sink((input) =>
                 {
-                    // var latency = MPI.Environment.Time - input.CreatedAt;
-                    // Console.WriteLine($"Batch {input.Id} latency: {latency}s");
                     var store = new DStreamKeyStore<string, int>();
                     if (!input.EOS)
                     {
@@ -54,13 +55,14 @@ namespace DLinq.Exemples
                     }
                     else
                     {
+                        Console.WriteLine($"EOS message created at time: {input.CreatedAt * 1000}ms");
+                        Console.WriteLine($"Sink received EOS at time: {MPI.Environment.Time * 1000}ms");
                         var topResults = store.GetAll()
                             .OrderByDescending(x => x.Value)
                             .Take(10)
                             .Select(x => $"{x.Key}: {x.Value}");
 
                         Console.WriteLine(String.Join(", ", topResults));
-                        Console.WriteLine($"Elapsed time: {input.CreatedAt / 1000}ms");
                     }
                 });
             });
