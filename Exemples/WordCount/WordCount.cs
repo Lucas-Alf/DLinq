@@ -55,6 +55,7 @@ namespace DLinq.Exemples
                             .Select(x => $"{x.Key}: {x.Value}");
 
                         Console.WriteLine(String.Join(", ", topResults));
+                        Console.WriteLine($"Elapsed time: {input.CreatedAt/1000}ms");
                     }
                 });
         }
